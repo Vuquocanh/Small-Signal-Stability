@@ -68,4 +68,4 @@ for i in range(A_size[0]):
         P[i, j] = Phi[i, j] * Psi[j, i]
         
 pmw.latex_P_matrix(P, names, False, result_path("Results_Q1_2", "P_matrix_Q1_2.tex"), A_size[0], 0.05)
-pmw.excel_P_matrix(P, names, False, result_path("Results_Q1_2", "P_matrix_Q1_2.xlsx"), 0.05)
+pmw.excel_P_matrix(P, names, False, result_path("Results_Q1_2", "P_matrix_Q1_2.xls"), 0.05)
