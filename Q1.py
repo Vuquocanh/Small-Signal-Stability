@@ -2,6 +2,16 @@ import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
 import math
+import os
+import sys
+sys.path.append('./Assignment_helpfunctions_part_I')
+import P_matrix_write as pmw
+
+# Create path for results
+def result_path(subfolder, filename):
+    folder = os.path.join("./Results", subfolder)
+    os.makedirs(folder, exist_ok=True)
+    return os.path.join(folder, filename)
 
 #------------------------------------------------------------------------------
 #Q1.1.1: Manual Excitation, Calculating eignevalues of the system matrix and 
@@ -37,7 +47,7 @@ latex_names = sys_data['latex_names_q1b']
 
 print("------------------------------------------------------------------------------")
 print("Q1.2.1: Calculating eigenvalues of the system matrix and frequency, damping")
-eigen_vals, eigen_vec = np.linalg.eig(matrix_A)
+eigen_vals, Phi = np.linalg.eig(matrix_A)
 for lam in eigen_vals:
     sigma = lam.real
     omega = lam.imag
@@ -48,3 +58,14 @@ for lam in eigen_vals:
     else:
         print(f"Eigenvalue: {lam:.4f}")
 print("------------------------------------------------------------------------------")
+
+#Participation Matrix P_ij = phi_ij * psi_ji
+A_size = matrix_A.shape
+P = np.zeros(matrix_A.shape, dtype = complex)
+Psi = np.linalg.inv(Phi)
+for i in range(A_size[0]):
+    for j in range(A_size[1]):
+        P[i, j] = Phi[i, j] * Psi[j, i]
+        
+pmw.latex_P_matrix(P, names, False, result_path("Results_Q1_2", "P_matrix_Q1_2.tex"), A_size[0], 0.05)
+pmw.excel_P_matrix(P, names, False, result_path("Results_Q1_2", "P_matrix_Q1_2.xls"), 0.05)
