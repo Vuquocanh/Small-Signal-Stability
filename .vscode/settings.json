@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./Assignment_helpfunctions_part_I",
+        "./Assignment_helpfunctions_part_II"
+    ]
+}
