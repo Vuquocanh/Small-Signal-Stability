@@ -24,7 +24,8 @@ latex_names = sys_data['latex_names_q1a']
 
 print("------------------------------------------------------------------------------")
 print("Q1.1.1: Calculating eigenvalues of the system matrix and frequency, damping")
-eigen_vals, eigen_vec = np.linalg.eig(matrix_A)
+eigen_vals, Phi = np.linalg.eig(matrix_A)
+Psi = np.linalg.inv(Phi)
 for lam in eigen_vals:
     sigma = lam.real
     omega = lam.imag
@@ -35,6 +36,14 @@ for lam in eigen_vals:
     else:
         print(f"Eigenvalue: {lam:.4f}")
 print("------------------------------------------------------------------------------")
+
+# Time response plotting
+t = np.arange(0,5,0.001)
+xt_1 = np.zeros((matrix_A.shape[0],len(t)), dtype = complex)
+x_nul = np.zeros(matrix_A.shape[0], dtype = complex)
+x_nul[0] = 0.087266
+for k in range(0,len(t)):
+    xt_1[:,k] = np.real(Phi.dot(np.exp(eigen_vals*t[k])*Psi.dot(x_nul)))
 
 #------------------------------------------------------------------------------
 #Q1.2.1: Effect of AVR, Calculating eignevalues of the system matrix and 
@@ -70,6 +79,13 @@ for i in range(A_size[0]):
 pmw.latex_P_matrix(P, names, False, result_path("Results_Q1_2", "P_matrix_Q1_2.tex"), A_size[0], 0.05)
 pmw.excel_P_matrix(P, names, False, result_path("Results_Q1_2", "P_matrix_Q1_2.xls"), 0.05)
 
+# Time response plotting
+xt_2 = np.zeros((matrix_A.shape[0],len(t)), dtype = complex)
+x_nul = np.zeros(matrix_A.shape[0], dtype = complex)
+x_nul[0] = 0.087266
+for k in range(0,len(t)):
+    xt_2[:,k] = np.real(Phi.dot(np.exp(eigen_vals*t[k])*Psi.dot(x_nul)))
+
 #------------------------------------------------------------------------------
 #Q1.3.1: Effect of AVR+PSS, Calculating eignevalues of the system matrix and 
 # frequency, damping of the oscillation modes
@@ -103,3 +119,20 @@ for i in range(A_size[0]):
         
 pmw.latex_P_matrix(P, names, False, result_path("Results_Q1_3", "P_matrix_Q1_3.tex"), A_size[0], 0.05)
 pmw.excel_P_matrix(P, names, False, result_path("Results_Q1_3", "P_matrix_Q1_3.xls"), 0.05)
+
+# Time response plotting
+xt_3 = np.zeros((A_size[0],len(t)), dtype = complex)
+x_nul = np.zeros(A_size[0], dtype = complex)
+x_nul[0] = 0.087266
+for k in range(0,len(t)):
+    xt_3[:,k] = np.real(Phi.dot(np.exp(eigen_vals*t[k])*Psi.dot(x_nul)))
+
+plt.plot(t, xt_1[0,:], label = "Manual")
+plt.plot(t, xt_2[0,:], label = "AVR")
+plt.plot(t, xt_3[0,:], label = "PSS + AVR")
+plt.grid(True)
+plt.legend()
+plt.xlabel("Time [s]")
+plt.ylabel(r"$\Delta\delta$ [rad]")
+plt.savefig(result_path("Results_Q1_3", "delta_t_response.pdf"), bbox_inches='tight', dpi=300)
+plt.show()
