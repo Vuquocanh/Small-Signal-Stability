@@ -13,6 +13,15 @@ def result_path(subfolder, filename):
     os.makedirs(folder, exist_ok=True)
     return os.path.join(folder, filename)
 
+# Time response to an initial rotor angle perturbation delta0 (rad)
+def time_response(Phi, Psi, eigen_vals, t, delta0=0.087266):
+    x_nul = np.zeros(Phi.shape[0], dtype=complex)
+    x_nul[0] = delta0
+    xt = np.zeros((Phi.shape[0], len(t)))
+    for k in range(len(t)):
+        xt[:,k] = np.real(Phi.dot(np.exp(eigen_vals*t[k])*Psi.dot(x_nul)))
+    return xt
+
 #------------------------------------------------------------------------------
 #Q1.1.1: Manual Excitation, Calculating eignevalues of the system matrix and 
 # frequency, damping of the oscillation modes
@@ -39,11 +48,7 @@ print("-------------------------------------------------------------------------
 
 # Time response plotting
 t = np.arange(0,5,0.001)
-xt_1 = np.zeros((matrix_A.shape[0],len(t)), dtype = complex)
-x_nul = np.zeros(matrix_A.shape[0], dtype = complex)
-x_nul[0] = 0.087266
-for k in range(0,len(t)):
-    xt_1[:,k] = np.real(Phi.dot(np.exp(eigen_vals*t[k])*Psi.dot(x_nul)))
+xt_1 = time_response(Phi, Psi, eigen_vals, t)
 
 #------------------------------------------------------------------------------
 #Q1.2.1: Effect of AVR, Calculating eignevalues of the system matrix and 
@@ -80,11 +85,7 @@ pmw.latex_P_matrix(P, names, False, result_path("Results_Q1_2", "P_matrix_Q1_2.t
 pmw.excel_P_matrix(P, names, False, result_path("Results_Q1_2", "P_matrix_Q1_2.xls"), 0.05)
 
 # Time response plotting
-xt_2 = np.zeros((matrix_A.shape[0],len(t)), dtype = complex)
-x_nul = np.zeros(matrix_A.shape[0], dtype = complex)
-x_nul[0] = 0.087266
-for k in range(0,len(t)):
-    xt_2[:,k] = np.real(Phi.dot(np.exp(eigen_vals*t[k])*Psi.dot(x_nul)))
+xt_2 = time_response(Phi, Psi, eigen_vals, t)
 
 #------------------------------------------------------------------------------
 #Q1.3.1: Effect of AVR+PSS, Calculating eignevalues of the system matrix and 
@@ -121,11 +122,7 @@ pmw.latex_P_matrix(P, names, False, result_path("Results_Q1_3", "P_matrix_Q1_3.t
 pmw.excel_P_matrix(P, names, False, result_path("Results_Q1_3", "P_matrix_Q1_3.xls"), 0.05)
 
 # Time response plotting
-xt_3 = np.zeros((A_size[0],len(t)), dtype = complex)
-x_nul = np.zeros(A_size[0], dtype = complex)
-x_nul[0] = 0.087266
-for k in range(0,len(t)):
-    xt_3[:,k] = np.real(Phi.dot(np.exp(eigen_vals*t[k])*Psi.dot(x_nul)))
+xt_3 = time_response(Phi, Psi, eigen_vals, t)
 
 plt.plot(t, xt_1[0,:], label = "Manual")
 plt.plot(t, xt_2[0,:], label = "AVR")
