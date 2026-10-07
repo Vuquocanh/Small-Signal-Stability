@@ -56,7 +56,11 @@ for i in range(len(evals)):
     top_states_idx = np.argsort(p_mag)[-2:][::-1]
     dom_states_str = ", ".join([str(names_q2a[idx]) for idx in top_states_idx])
 
-    if np.abs(imag) > 1e-4:
+    # Zero-modes show up numerically as |lambda| ~ 0, possibly as a tiny complex pair
+    if np.abs(lam) < 1e-2:
+        zero_indices.append(i)
+        print(f"lambda_{i+1:<4}{real:+.4f} +- {np.abs(imag):.4f}j{'Zero-mode':<16}{'Zero-mode':<14}{dom_states_str:<25}")
+    elif np.abs(imag) > 1e-4:
         wn = np.abs(lam)
         fn = imag / (2 * np.pi)
         zeta = -real / wn
@@ -69,8 +73,6 @@ for i in range(len(evals)):
 
         print(f"lambda_{i+1:<4}{real:+.4f} +- {np.abs(imag):.4f}j{np.abs(fn):<16.4f}{zeta:<14.4f}{dom_states_str:<25}")
     else:
-        if np.abs(real) < 1e-4:
-            zero_indices.append(i)
         print(f"lambda_{i+1:<4}{real:+.4f}{'N/A (Real)':<16}{'N/A (Real)':<14}{dom_states_str:<25}")
 
 # Flag electromechanical modes with critically low damping (zeta <= 0.1)
