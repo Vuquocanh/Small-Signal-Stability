@@ -1,14 +1,23 @@
 import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
+import sys
+import os
+sys.path.append('./Assignment_helpfunctions_part_I')
 import P_matrix_write as Pmw
 import plot_phasor_diagram_sss as ppd
 
 # Load System Data
-sys_data = sio.loadmat('system_q2.mat', squeeze_me=True)
+sys_data = sio.loadmat('./Assignment_data/system_q2.mat', squeeze_me=True)
 A = sys_data['A']
 names_q2a = sys_data['names_q2a']
 latex_names_q2a = sys_data['latex_names_q2a']
+
+# Create path for results
+def result_path(subfolder, filename):
+    folder = os.path.join("./Results", subfolder)
+    os.makedirs(folder, exist_ok=True)
+    return os.path.join(folder, filename)
 
 # ----------------------------------------------------------------------------------------------------------------
 # Q.2.1.1: Participation Matrix Calculation & Export
@@ -23,8 +32,8 @@ for i in range(A.shape[0]):
         P[i, j] = right_evecs[i, j] * left_evecs[j, i]
 
 # Export to LaTeX and Excel for Appendix
-Pmw.latex_P_matrix(P, latex_names_q2a, False, 'appendix_P_matrix.tex', 5, 0.05)
-Pmw.excel_P_matrix(P, names_q2a, False, 'appendix_P_matrix.xls', 0.05)
+Pmw.latex_P_matrix(P, latex_names_q2a, False, result_path("Results_Q2_1", "P_matrix.tex"), 5, 0.05)
+Pmw.excel_P_matrix(P, names_q2a, False, result_path("Appendix", "P_matrix.xls"), 0.05)
 print("Q.2.1.1: Participation matrix generated and saved to files.")
 # ----------------------------------------------------------------------------------------------------------------
 # Q.2.1.2 & Q.2.1.3: Eigenvalues & Mode Summary Table
@@ -34,6 +43,8 @@ print(f"{'Mode':<6}{'Eigenvalue (lambda)':<28}{'Frequency (Hz)':<16}{'Damping (z
 print("-" * 95)
 
 em_indices = []
+em_zetas = {}
+zero_indices = []
 
 for i in range(len(evals)):
     lam = evals[i]
@@ -54,10 +65,32 @@ for i in range(len(evals)):
         is_em = any('delta' in str(names_q2a[idx]).lower() or 'omega' in str(names_q2a[idx]).lower() for idx in top_states_idx)
         if is_em and imag > 0:
             em_indices.append(i)
+            em_zetas[i] = zeta
 
         print(f"lambda_{i+1:<4}{real:+.4f} +- {np.abs(imag):.4f}j{np.abs(fn):<16.4f}{zeta:<14.4f}{dom_states_str:<25}")
     else:
+        if np.abs(real) < 1e-4:
+            zero_indices.append(i)
         print(f"lambda_{i+1:<4}{real:+.4f}{'N/A (Real)':<16}{'N/A (Real)':<14}{dom_states_str:<25}")
+
+# Flag electromechanical modes with critically low damping (zeta <= 0.1)
+print("\nElectromechanical modes with critically low damping (zeta <= 0.1):")
+critical = [i for i in em_indices if em_zetas[i] <= 0.1]
+if critical:
+    for i in critical:
+        print(f"  lambda_{i+1}: zeta = {em_zetas[i]:.4f}")
+else:
+    print("  None")
+
+# Zero-modes: eigenvalues ~0 arise because the model has no absolute angle
+# reference, so a uniform shift of all rotor angles leaves the system unchanged.
+print("\nZero-modes (lambda approx. 0):")
+if zero_indices:
+    for i in zero_indices:
+        print(f"  lambda_{i+1} = {evals[i]:.4f} -- dominant states: "
+              f"{', '.join([str(names_q2a[idx]) for idx in np.argsort(np.abs(P[:, i]))[-2:][::-1]])}")
+else:
+    print("  None")
 
 # ----------------------------------------------------------------------------------------------------------------
 # Q.2.1.4: Plot Mode Shapes for Electromechanical Modes
@@ -77,7 +110,7 @@ for idx in em_indices:
     plt.grid(True)
     ppd.plot_phasors(phasors, np.array(colors), np.array(labels))
     plt.title(f"Mode Shape for Mode lambda_{idx+1}")
-    plt.savefig(f'mode_shape_lambda_{idx+1}.pdf', bbox_inches='tight')
+    plt.savefig(result_path("Results_Q2_1", f"mode_shape_lambda_{idx+1}.pdf"), bbox_inches='tight')
     plt.show()
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -102,5 +135,10 @@ plt.ylabel(r'Rotor Angle Deviation $\Delta\delta$ [rad]')
 plt.title('Time Response - Inter-Area Mode Excitation')
 plt.legend()
 plt.grid(True)
-plt.savefig('inter_area_time_response.pdf', bbox_inches='tight')
+plt.savefig(result_path("Results_Q2_1", "inter_area_time_response.pdf"), bbox_inches='tight')
 plt.show()
+
+# ----------------------------------------------------------------------------------------------------------------
+# Q.2.2.1: Determining Suitable Locations for PSS Installation
+# ----------------------------------------------------------------------------------------------------------------
+
