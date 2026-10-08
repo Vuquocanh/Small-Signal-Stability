@@ -5,7 +5,7 @@ import numpy as np
 
 
 """ Load System Data """
-sys_data = sio.loadmat('system_q2.mat',squeeze_me=True) #squeeze_me=True gets rid of unnecessary nesting
+sys_data = sio.loadmat('./Assignment_data/system_q2.mat',squeeze_me=True) #squeeze_me=True gets rid of unnecessary nesting
 A = sys_data['A']
 B = sys_data['B']
 C = sys_data['C']
