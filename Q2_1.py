@@ -33,7 +33,7 @@ for i in range(A.shape[0]):
 
 # Export to LaTeX and Excel for Appendix
 Pmw.latex_P_matrix(P, latex_names_q2a, False, result_path("Results_Q2_1", "P_matrix.tex"), 5, 0.05)
-Pmw.excel_P_matrix(P, names_q2a, False, result_path("Appendix", "P_matrix.xls"), 0.05)
+Pmw.excel_P_matrix(P, names_q2a, False, result_path("Results_Q2_1", "P_matrix.xls"), 0.05)
 print("Q.2.1.1: Participation matrix generated and saved to files.")
 # ----------------------------------------------------------------------------------------------------------------
 # Q.2.1.2 & Q.2.1.3: Eigenvalues & Mode Summary Table
@@ -113,8 +113,8 @@ for idx in em_indices:
     ppd.plot_phasors(phasors, np.array(colors), np.array(labels))
     plt.title(f"Mode Shape for Mode lambda_{idx+1}")
     plt.savefig(result_path("Results_Q2_1", f"mode_shape_lambda_{idx+1}.pdf"), bbox_inches='tight')
-    plt.show()
-
+    # plt.show()
+    
 # ----------------------------------------------------------------------------------------------------------------
 # Q.2.1.5: Inter-Area Mode Time Response Simulation
 # ----------------------------------------------------------------------------------------------------------------
@@ -138,9 +138,4 @@ plt.title('Time Response - Inter-Area Mode Excitation')
 plt.legend()
 plt.grid(True)
 plt.savefig(result_path("Results_Q2_1", "inter_area_time_response.pdf"), bbox_inches='tight')
-plt.show()
-
-# ----------------------------------------------------------------------------------------------------------------
-# Q.2.2.1: Determining Suitable Locations for PSS Installation
-# ----------------------------------------------------------------------------------------------------------------
-
+# plt.show()
