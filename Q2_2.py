@@ -78,8 +78,8 @@ print("\nQ.2.2.1: PSS location analysis for the electromechanical modes")
 
 # Participation of the generator speed states in each electromechanical mode,
 # normalized so that the most participating generator of each mode equals 1
-P_red = np.abs(P[np.ix_(omega_indices, em_indices)])
-P_red = P_red / P_red.max(axis=0)
+P_abs = np.abs(P[np.ix_(omega_indices, em_indices)])
+P_red = P_abs / P_abs.max(axis=0)
 
 # Mode observability from the speed outputs and controllability from the V_ref inputs
 obs = C[speed_indices, :] @ right_evecs[:, em_indices]   # (generators x modes)
@@ -92,7 +92,9 @@ residue_angle = np.angle(residue, deg=True)
 residue_norm = residue_mag / residue_mag.max(axis=0)
 
 mode_labels = [f"lambda_{i+1}" for i in em_indices]
-tables = [("Normalized participation factors |P| (speed states)", P_red, ".3f"),
+tables = [("Participation factors |P| (speed states)", P_abs, ".4f"),
+          ("Normalized participation factors |P| (speed states)", P_red, ".3f"),
+          ("Residues |R|", residue_mag, ".4f"),
           ("Normalized residues |R|", residue_norm, ".3f"),
           ("Residue angles [deg]", residue_angle, ".1f")]
 
