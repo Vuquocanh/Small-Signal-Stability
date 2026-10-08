@@ -6,7 +6,6 @@ import os
 sys.path.append('./Assignment_helpfunctions_part_I')
 import P_matrix_write as Pmw
 import plot_phasor_diagram_sss as ppd
-sys.path.append('./Assignment_helpfunctions_part_II')
 
 # Load System Data
 sys_data = sio.loadmat('./Assignment_data/system_q2.mat', squeeze_me=True)
@@ -140,47 +139,3 @@ plt.legend()
 plt.grid(True)
 plt.savefig(result_path("Results_Q2_1", "inter_area_time_response.pdf"), bbox_inches='tight')
 # plt.show()
-print("------------------------------------------------------------------------------")
-# ----------------------------------------------------------------------------------------------------------------
-# Q.2.2.1: Determining Suitable Locations for PSS Installation
-# ----------------------------------------------------------------------------------------------------------------
-print("\nQ.2.2.1: PSS location analysis for the electromechanical modes")
-
-# Input/output and state indices (strsps uses MATLAB 1-based indexing)
-B = sys_data['B']
-C = sys_data['C']
-strsps = sys_data['strsps']
-vref_indices = np.asarray(strsps['vref'].item(), dtype=int).ravel() - 1    # PSS input: V_ref of G1..G4 (columns of B)
-speed_indices = np.asarray(strsps['speed'].item(), dtype=int).ravel() - 1  # PSS measurement: speed of G1..G4 (rows of C)
-omega_indices = [np.where(names_q2a == name)[0][0] for name in ['omega_G1', 'omega_G2', 'omega_G3', 'omega_G4']]
-
-# Participation of the generator speed states in each electromechanical mode,
-# normalized so that the most participating generator of each mode equals 1
-P_red = np.abs(P[np.ix_(omega_indices, em_indices)])
-P_red = P_red / P_red.max(axis=0)
-
-# Mode observability from the speed outputs and controllability from the V_ref inputs
-obs = C[speed_indices, :] @ right_evecs[:, em_indices]   # (generators x modes)
-contr = left_evecs[em_indices, :] @ B[:, vref_indices]   # (modes x generators)
-
-# Residue R_ki = (C_k phi_i)(psi_i B_k): effect of a PSS at generator k on mode i
-residue = obs * contr.T
-residue_mag = np.abs(residue)
-residue_angle = np.angle(residue, deg=True)   
-residue_norm = residue_mag / residue_mag.max(axis=0)
-
-gen_labels = ['G1', 'G2', 'G3', 'G4']
-mode_labels = [f"lambda_{i+1}" for i in em_indices]
-tables = [("Normalized participation factors |P| (speed states)", P_red, ".3f"),
-          ("Normalized residues |R|", residue_norm, ".3f"),
-          ("Residue angles [deg]", residue_angle, ".1f")]
-
-for title, table, fmt in tables:
-    print(f"\n{title}")
-    print(f"{'Gen':<6}" + "".join(f"{m:>12}" for m in mode_labels))
-    for k, g in enumerate(gen_labels):
-        print(f"{g:<6}" + "".join(f"{v:>12{fmt}}" for v in table[k]))
-
-print("\nMost effective PSS location per mode (largest residue):")
-for col, i in enumerate(em_indices):
-    print(f"  lambda_{i+1} = {evals[i]:.4f}: {gen_labels[np.argmax(residue_norm[:, col])]}")
