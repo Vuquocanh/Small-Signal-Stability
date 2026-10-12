@@ -19,9 +19,9 @@ def result_path(subfolder, filename):
     os.makedirs(folder, exist_ok=True)
     return os.path.join(folder, filename)
 
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Q.2.1.1: Participation Matrix Calculation & Export
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 evals, right_evecs = np.linalg.eig(A)
 left_evecs = np.linalg.inv(right_evecs)
 
@@ -35,9 +35,9 @@ for i in range(A.shape[0]):
 Pmw.latex_P_matrix(P, latex_names_q2a, False, result_path("Results_Q2_1", "P_matrix.tex"), 5, 0.05)
 Pmw.excel_P_matrix(P, names_q2a, False, result_path("Results_Q2_1", "P_matrix.xls"), 0.05)
 print("Q.2.1.1: Participation matrix generated and saved to files.")
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Q.2.1.2 & Q.2.1.3: Eigenvalues & Mode Summary Table
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 print("\nQ.2.1.2 & Q.2.1.3: System Modes Table")
 print(f"{'Mode':<6}{'Eigenvalue (lambda)':<28}{'Frequency (Hz)':<16}{'Damping (zeta)':<14}{'Dominant States':<25}")
 print("-" * 95)
@@ -94,9 +94,9 @@ if zero_indices:
 else:
     print("  None")
 
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Q.2.1.4: Plot Mode Shapes for Electromechanical Modes
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 delta_indices = [np.where(names_q2a == name)[0][0] for name in ['delta_G1', 'delta_G2', 'delta_G3', 'delta_G4']]
 
 colors = ['#000099', '#ff0000', '#cc0099', '#33ccff']
@@ -115,9 +115,9 @@ for idx in em_indices:
     plt.savefig(result_path("Results_Q2_1", f"mode_shape_lambda_{idx+1}.pdf"), bbox_inches='tight')
     # plt.show()
     
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Q.2.1.5: Inter-Area Mode Time Response Simulation
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 inter_area_mode_idx = min(em_indices, key=lambda k: np.abs(np.imag(evals[k])))
 print(f"\nQ.2.1.5: Inter-Area Mode identified at lambda_{inter_area_mode_idx+1} = {evals[inter_area_mode_idx]:.4f}")
 
