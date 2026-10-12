@@ -25,9 +25,9 @@ def result_path(subfolder, filename):
     os.makedirs(folder, exist_ok=True)
     return os.path.join(folder, filename)
 
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Indices, PSS parameters and helper functions
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 gen_labels = ['G1', 'G2', 'G3', 'G4']
 delta_indices = [np.where(names_q2a == f'delta_{g}')[0][0] for g in gen_labels]
 omega_indices = [np.where(names_q2a == f'omega_{g}')[0][0] for g in gen_labels]
@@ -71,9 +71,9 @@ em_indices, evals, right_evecs = electromechanical_modes(A)
 left_evecs = np.linalg.inv(right_evecs)
 P = right_evecs * left_evecs.T   # participation matrix P_ij = phi_ij * psi_ji
 
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Q.2.2.1: Determining Suitable Locations for PSS Installation
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 print("\nQ.2.2.1: PSS location analysis for the electromechanical modes")
 
 # Participation of the generator speed states in each electromechanical mode,
@@ -108,9 +108,9 @@ print("\nMost effective PSS location per mode (largest residue):")
 for col, i in enumerate(em_indices):
     print(f"  lambda_{i+1} = {evals[i]:.4f}: {gen_labels[np.argmax(residue_norm[:, col])]}")
 
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Q.2.2.2: Obtain the phase response of the system
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Parameters for frequency sweep
 fmin = 0 ; fmax = 2
 f = np.arange(fmin,fmax,.001)
@@ -141,9 +141,9 @@ plt.grid(True)
 plt.savefig(result_path("Results_Q2_2", "system_phase_response.pdf"), bbox_inches='tight')
 # plt.show()
 
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Q.2.2.3: Tuning of the PSS phase compensation
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 print("\nQ.2.2.3: PSS phase compensation tuning")
 
 # PSS locations chosen from the residues in Q.2.2.1 (generator numbers, 1-based as used by addPSS):
@@ -190,9 +190,9 @@ plt.grid(True)
 plt.savefig(result_path("Results_Q2_2", "pss_phase_compensation.pdf"), bbox_inches='tight')
 # plt.show()
 
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Q.2.2.4: Performance of the power system stabilizers
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 print("\nQ.2.2.4: Electromechanical modes with PSS")
 
 print_modes("No PSS", A)
@@ -213,9 +213,9 @@ gens_str = " + ".join(f"G{g}" for g in final_gens)
 print_modes(f"{gens_str}, initial", system_with_pss(final_gens, params_init).A)
 print_modes(f"{gens_str}, tuned", system_with_pss(final_gens, params_tuned).A)
 
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Q.2.2.5: Inter-area mode time response with the final PSS solution
-# ----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------
 A_final = system_with_pss(final_gens, params_tuned).A
 modes_final, evals_final, evecs_final = electromechanical_modes(A_final)
 inter_area_final = modes_final[0]   # lowest frequency electromechanical mode
