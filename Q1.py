@@ -22,16 +22,16 @@ def time_response(Phi, Psi, eigen_vals, t, delta0=0.087266):
         xt[:,k] = np.real(Phi.dot(np.exp(eigen_vals*t[k])*Psi.dot(x_nul)))
     return xt
 
-#------------------------------------------------------------------------------
-#Q1.1.1: Manual Excitation, Calculating eignevalues of the system matrix and 
+#--------------------------------------------------------------------
+#Q1.1.1: Manual Excitation, Calculating eigenvalues of the system matrix and 
 # frequency, damping of the oscillation modes
-#------------------------------------------------------------------------------
+#--------------------------------------------------------------------
 sys_data = sio.loadmat('./Assignment_data/system_q1a.mat', squeeze_me=True)
 matrix_A = sys_data['A_q1a']
 names = sys_data['names_q1a']
 latex_names = sys_data['latex_names_q1a']
 
-print("------------------------------------------------------------------------------")
+print("--------------------------------------------------------------")
 print("Q1.1.1: Calculating eigenvalues of the system matrix and frequency, damping")
 eigen_vals, Phi = np.linalg.eig(matrix_A)
 Psi = np.linalg.inv(Phi)
@@ -44,22 +44,22 @@ for lam in eigen_vals:
         print(f"Eigenvalue: {lam:.4f}, Frequency: {freq:.4f} Hz, Damping: {damp:.4f}")
     else:
         print(f"Eigenvalue: {lam:.4f}")
-print("------------------------------------------------------------------------------")
+print("--------------------------------------------------------------")
 
 # Time response plotting
 t = np.arange(0,5,0.001)
 xt_1 = time_response(Phi, Psi, eigen_vals, t)
 
-#------------------------------------------------------------------------------
-#Q1.2.1: Effect of AVR, Calculating eignevalues of the system matrix and 
+#--------------------------------------------------------------------
+#Q1.2.1: Effect of AVR, Calculating eigenvalues of the system matrix and 
 # frequency, damping of the oscillation modes
-#------------------------------------------------------------------------------
+#--------------------------------------------------------------------
 sys_data = sio.loadmat('./Assignment_data/system_q1b.mat', squeeze_me=True)
 matrix_A = sys_data['A_q1b']
 names = sys_data['names_q1b']
 latex_names = sys_data['latex_names_q1b']
 
-print("------------------------------------------------------------------------------")
+print("--------------------------------------------------------------")
 print("Q1.2.1: Considering AVR, calculating eigenvalues of the system matrix and frequency, damping")
 eigen_vals, Phi = np.linalg.eig(matrix_A)
 for lam in eigen_vals:
@@ -71,7 +71,7 @@ for lam in eigen_vals:
         print(f"Eigenvalue: {lam:.4f}, Frequency: {freq:.4f} Hz, Damping: {damp:.4f}")
     else:
         print(f"Eigenvalue: {lam:.4f}")
-print("------------------------------------------------------------------------------")
+print("--------------------------------------------------------------")
 
 #Participation Matrix P_ij = phi_ij * psi_ji
 A_size = matrix_A.shape
@@ -87,16 +87,16 @@ pmw.excel_P_matrix(P, names, False, result_path("Results_Q1_2", "P_matrix_Q1_2.x
 # Time response plotting
 xt_2 = time_response(Phi, Psi, eigen_vals, t)
 
-#------------------------------------------------------------------------------
-#Q1.3.1: Effect of AVR+PSS, Calculating eignevalues of the system matrix and 
+#--------------------------------------------------------------------
+#Q1.3.1: Effect of AVR+PSS, calculating eigenvalues of the system matrix and 
 # frequency, damping of the oscillation modes
-#------------------------------------------------------------------------------
+#--------------------------------------------------------------------
 sys_data = sio.loadmat('./Assignment_data/system_q1c.mat', squeeze_me=True)
 matrix_A = sys_data['A_q1c']
 names = sys_data['names_q1c']
 latex_names = sys_data['latex_names_q1c']
 
-print("------------------------------------------------------------------------------")
+print("--------------------------------------------------------------")
 print("Q1.3.1: Considering PSS, calculating eigenvalues of the system matrix and frequency, damping")
 eigen_vals, Phi = np.linalg.eig(matrix_A)
 for lam in eigen_vals:
