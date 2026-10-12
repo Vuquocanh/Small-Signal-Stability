@@ -175,7 +175,9 @@ for label, params in [("Initial", params_init), ("Tuned", params_tuned)]:
     print(f"{label:<10}" + "".join(f"{v:>9.4f}" for v in params) + f"   max phase mismatch = {mismatch:.1f} deg")
 
 plt.figure(figsize=(7, 4), dpi=300)
-plt.plot(f_band, required_phase, 'k', label='Required compensation')
+for g in pss_gens:
+    plt.plot(f_band, -sys_phase[g - 1, band], linewidth=0.8, alpha=0.6, label=f'G{g}')
+plt.plot(f_band, required_phase, 'k', label='Average (tuning target)')
 plt.plot(f_band, pss_phase(params_init, f_band), '--', label='PSS, initial settings')
 plt.plot(f_band, pss_phase(params_tuned, f_band), label='PSS, tuned settings')
 for i in em_indices:
