@@ -1,7 +1,6 @@
 import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
-import math
 import os
 import sys
 sys.path.append('./Assignment_helpfunctions_part_I')
@@ -13,6 +12,31 @@ def result_path(subfolder, filename):
     os.makedirs(folder, exist_ok=True)
     return os.path.join(folder, filename)
 
+# Load the system matrix and the state names of one case ('q1a', 'q1b' or 'q1c')
+def load_system(case):
+    sys_data = sio.loadmat(f'./Assignment_data/system_{case}.mat', squeeze_me=True)
+    return sys_data[f'A_{case}'], sys_data[f'names_{case}'], sys_data[f'latex_names_{case}']
+
+# Eigenvalues, right (Phi) and left (Psi) eigenvectors and participation matrix P_ij = phi_ij * psi_ji
+def eigen_analysis(A):
+    eigen_vals, Phi = np.linalg.eig(A)
+    Psi = np.linalg.inv(Phi)
+    P = Phi * Psi.T
+    return eigen_vals, Phi, Psi, P
+
+# Print the eigenvalues, and the frequency and damping ratio of the oscillating modes
+def print_modes(title, eigen_vals):
+    print("------------------------------------------------------------------------------")
+    print(title)
+    for lam in eigen_vals:
+        if abs(lam.imag) > 1e-5:
+            freq = abs(lam.imag) / (2 * np.pi)
+            damp = -lam.real / abs(lam)
+            print(f"Eigenvalue: {lam:.4f}, Frequency: {freq:.4f} Hz, Damping: {damp:.4f}")
+        else:
+            print(f"Eigenvalue: {lam:.4f}")
+    print("------------------------------------------------------------------------------")
+
 # Time response to an initial rotor angle perturbation delta0 (rad)
 def time_response(Phi, Psi, eigen_vals, t, delta0=0.087266):
     x_nul = np.zeros(Phi.shape[0], dtype=complex)
@@ -22,108 +46,46 @@ def time_response(Phi, Psi, eigen_vals, t, delta0=0.087266):
         xt[:,k] = np.real(Phi.dot(np.exp(eigen_vals*t[k])*Psi.dot(x_nul)))
     return xt
 
-#--------------------------------------------------------------------
-#Q1.1.1: Manual Excitation, Calculating eigenvalues of the system matrix and 
-# frequency, damping of the oscillation modes
-#--------------------------------------------------------------------
-sys_data = sio.loadmat('./Assignment_data/system_q1a.mat', squeeze_me=True)
-matrix_A = sys_data['A_q1a']
-names = sys_data['names_q1a']
-latex_names = sys_data['latex_names_q1a']
-
-print("--------------------------------------------------------------")
-print("Q1.1.1: Calculating eigenvalues of the system matrix and frequency, damping")
-eigen_vals, Phi = np.linalg.eig(matrix_A)
-Psi = np.linalg.inv(Phi)
-for lam in eigen_vals:
-    sigma = lam.real
-    omega = lam.imag
-    if abs(omega) > 10e-6:
-        freq = abs(omega)/(2*math.pi)
-        damp = -sigma/(np.sqrt(sigma**2 + omega**2))
-        print(f"Eigenvalue: {lam:.4f}, Frequency: {freq:.4f} Hz, Damping: {damp:.4f}")
-    else:
-        print(f"Eigenvalue: {lam:.4f}")
-print("--------------------------------------------------------------")
-
-# Time response plotting
 t = np.arange(0,5,0.001)
+
+#------------------------------------------------------------------------------
+#Q1.1.1: Manual excitation, eigenvalues of the system matrix and
+# frequency, damping of the oscillating modes
+#------------------------------------------------------------------------------
+A, _, _ = load_system('q1a')
+eigen_vals, Phi, Psi, P = eigen_analysis(A)
+print_modes("Q1.1.1: Manual excitation", eigen_vals)
 xt_1 = time_response(Phi, Psi, eigen_vals, t)
 
-#--------------------------------------------------------------------
-#Q1.2.1: Effect of AVR, Calculating eigenvalues of the system matrix and 
-# frequency, damping of the oscillation modes
-#--------------------------------------------------------------------
-sys_data = sio.loadmat('./Assignment_data/system_q1b.mat', squeeze_me=True)
-matrix_A = sys_data['A_q1b']
-names = sys_data['names_q1b']
-latex_names = sys_data['latex_names_q1b']
+#------------------------------------------------------------------------------
+#Q1.2.1: Effect of AVR, eigenvalues of the system matrix, frequency, damping
+# of the oscillating modes and participation matrix
+#------------------------------------------------------------------------------
+A, names, latex_names = load_system('q1b')
+eigen_vals, Phi, Psi, P = eigen_analysis(A)
+print_modes("Q1.2.1: AVR", eigen_vals)
 
-print("--------------------------------------------------------------")
-print("Q1.2.1: Considering AVR, calculating eigenvalues of the system matrix and frequency, damping")
-eigen_vals, Phi = np.linalg.eig(matrix_A)
-for lam in eigen_vals:
-    sigma = lam.real
-    omega = lam.imag
-    if abs(omega) > 10e-6:
-        freq = abs(omega)/(2*math.pi)
-        damp = -sigma/(np.sqrt(sigma**2 + omega**2))
-        print(f"Eigenvalue: {lam:.4f}, Frequency: {freq:.4f} Hz, Damping: {damp:.4f}")
-    else:
-        print(f"Eigenvalue: {lam:.4f}")
-print("--------------------------------------------------------------")
-
-#Participation Matrix P_ij = phi_ij * psi_ji
-A_size = matrix_A.shape
-P = np.zeros(matrix_A.shape, dtype = complex)
-Psi = np.linalg.inv(Phi)
-for i in range(A_size[0]):
-    for j in range(A_size[1]):
-        P[i, j] = Phi[i, j] * Psi[j, i]
-        
-pmw.latex_P_matrix(P, names, False, result_path("Results_Q1_2", "P_matrix_Q1_2.tex"), A_size[0], 0.05)
+# LaTeX names are used for the .tex table, plain names for the Excel table
+pmw.latex_P_matrix(P, latex_names, False, result_path("Results_Q1_2", "P_matrix_Q1_2.tex"), A.shape[0], 0.05)
 pmw.excel_P_matrix(P, names, False, result_path("Results_Q1_2", "P_matrix_Q1_2.xls"), 0.05)
-
-# Time response plotting
 xt_2 = time_response(Phi, Psi, eigen_vals, t)
 
-#--------------------------------------------------------------------
-#Q1.3.1: Effect of AVR+PSS, calculating eigenvalues of the system matrix and 
-# frequency, damping of the oscillation modes
-#--------------------------------------------------------------------
-sys_data = sio.loadmat('./Assignment_data/system_q1c.mat', squeeze_me=True)
-matrix_A = sys_data['A_q1c']
-names = sys_data['names_q1c']
-latex_names = sys_data['latex_names_q1c']
+#------------------------------------------------------------------------------
+#Q1.3.1: Effect of AVR+PSS, eigenvalues of the system matrix and
+# frequency, damping of the oscillating modes
+#------------------------------------------------------------------------------
+A, names, latex_names = load_system('q1c')
+eigen_vals, Phi, Psi, P = eigen_analysis(A)
+print_modes("Q1.3.1: AVR + PSS", eigen_vals)
 
-print("--------------------------------------------------------------")
-print("Q1.3.1: Considering PSS, calculating eigenvalues of the system matrix and frequency, damping")
-eigen_vals, Phi = np.linalg.eig(matrix_A)
-for lam in eigen_vals:
-    sigma = lam.real
-    omega = lam.imag
-    if abs(omega) > 10e-6:
-        freq = abs(omega)/(2*math.pi)
-        damp = -sigma/(np.sqrt(sigma**2 + omega**2))
-        print(f"Eigenvalue: {lam:.4f}, Frequency: {freq:.4f} Hz, Damping: {damp:.4f}")
-    else:
-        print(f"Eigenvalue: {lam:.4f}")
-print("------------------------------------------------------------------------------")
-
-#Participation Matrix P_ij = phi_ij * psi_ji
-A_size = matrix_A.shape
-P = np.zeros(matrix_A.shape, dtype = complex)
-Psi = np.linalg.inv(Phi)
-for i in range(A_size[0]):
-    for j in range(A_size[1]):
-        P[i, j] = Phi[i, j] * Psi[j, i]
-        
-pmw.latex_P_matrix(P, names, False, result_path("Results_Q1_3", "P_matrix_Q1_3.tex"), A_size[0], 0.05)
+pmw.latex_P_matrix(P, latex_names, False, result_path("Results_Q1_3", "P_matrix_Q1_3.tex"), A.shape[0], 0.05)
 pmw.excel_P_matrix(P, names, False, result_path("Results_Q1_3", "P_matrix_Q1_3.xls"), 0.05)
-
-# Time response plotting
 xt_3 = time_response(Phi, Psi, eigen_vals, t)
 
+#------------------------------------------------------------------------------
+#Q1.3.2: Rotor angle response of the three cases to delta(0) = 5 deg
+#------------------------------------------------------------------------------
+plt.figure(figsize=(7, 4), dpi=300)
 plt.plot(t, xt_1[0,:], label = "Manual")
 plt.plot(t, xt_2[0,:], label = "AVR")
 plt.plot(t, xt_3[0,:], label = "PSS + AVR")
